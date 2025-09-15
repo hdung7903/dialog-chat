@@ -7,7 +7,7 @@ export const openApiSpec = {
     version: '1.0.0'
   },
   servers: [
-    { url: 'http://localhost:' + (process.env.PORT ?? 3000) }
+    { url: 'http://localhost:' + (process.env.PORT ?? 3000)+ '/api/' }
   ],
   paths: {
     '/api/detect-intent': {
@@ -48,6 +48,46 @@ export const openApiSpec = {
           }
         }
       }
+    },
+    '/api/chat/history/{sessionId}': {
+      get: {
+        summary: 'Get chat history for a session',
+        parameters: [
+          {
+            name: 'sessionId',
+            in: 'path',
+            required: true,
+            schema: {
+              type: 'string'
+            },
+            description: 'Session ID to retrieve chat history for'
+          }
+        ],
+        responses: {
+          '200': {
+            description: 'Success',
+            content: {
+              'application/json': {
+                schema: {
+                  type: 'array',
+                  items: {
+                    type: 'object',
+                    properties: {
+                      sessionId: { type: 'string' },
+                      text: { type: 'string' },
+                      fulfillmentText: { type: 'string' },
+                      intentDisplayName: { type: ['string', 'null'] },
+                      confidence: { type: 'number' },
+                      timestamp: { type: 'string', format: 'date-time' },
+                      languageCode: { type: 'string' }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
     }
   }
 } as const
@@ -69,7 +109,11 @@ swaggerRoutes.get('/docs', (c) => c.html(`<!doctype html>
     <script>
       window.ui = SwaggerUIBundle({
         url: '/openapi.json',
-        dom_id: '#swagger-ui'
+        dom_id: '#swagger-ui',
+        deepLinking: true,
+        presets: [
+          SwaggerUIBundle.presets.apis
+        ]
       })
     </script>
   </body>
